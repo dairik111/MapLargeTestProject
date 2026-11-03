@@ -1,10 +1,51 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>File Browser</title>
+    <link rel="stylesheet" runat="server" media="screen" href="css/styles.css" />
 </head>
 <body>
-    Hello World!
+    <main>
+        <h1>File Browser</h1>
+        <form id="searchForm">
+            <input type="search" id="query" placeholder="Search names in current folder and below…" aria-label="Search" />
+            <button type="submit">Search</button>
+            <button type="button" id="clear">Clear</button>
+        </form>
+        <div id="crumbs"></div>
+        <div id="status" role="status"></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Location</th>
+                    <th class="num">Size</th>
+                    <th class="num">Modified</th>
+                </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+        </table>
+        <div />
+        <h1>Search Directory</h1>
+        <form id="settingsForm">
+            <input type="text" id="rootPath" placeholder="Set Root path" aria-label="Root Path" />
+            <button type="submit">Set Path</button>
+        </form>
+    </main>
+    <script src="js/app.js"></script>
+    <!--<script>
+              // Transpile the TypeScript above to JavaScript and run it.
+              (function () {
+                var src = document.getElementById("app-ts").textContent;
+                var js = ts.transpileModule(src, {
+                  compilerOptions: { target: ts.ScriptTarget.ES2020, module: ts.ModuleKind.None }
+                }).outputText;
+                var s = document.createElement("script");
+                s.textContent = js;
+                document.body.appendChild(s);
+              })();
+    </script>-->
 </body>
 </html>

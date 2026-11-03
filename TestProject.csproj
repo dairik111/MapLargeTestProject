@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -14,14 +14,25 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="scripts\app.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="wwwroot\index.html" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="src\Application\Interfaces\" />
-    <Folder Include="src\Application\Models\" />
-    <Folder Include="src\Application\Services\" />
     <Folder Include="src\Domain\" />
   </ItemGroup>
 
+  <!--<ItemGroup>
+    <AvailableItemName Include="TypeScriptCompile" />
+ </ItemGroup>  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="7.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+ 
 </Project>

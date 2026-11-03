@@ -1,18 +1,27 @@
+using TestProject.src.Application.Interfaces;
+using TestProject.src.Application.Models;
+using TestProject.src.Application.Services;
+
 namespace TestProject {
     public class Program {
         public static void Main(string[] args) {
             var builder = WebApplication.CreateBuilder(args);
+            builder.Services.AddControllers();
 
             // Add services to the container.
+            builder.Services.Configure<BrowseOptions>(builder.Configuration.GetSection(BrowseOptions.SectionName));
 
-            builder.Services.AddControllers();
+            // Configure services
+            builder.Services.AddSingleton<ISettingsHelper, SettingsHelper>(); // Set as Singleton so that it holds the mutable root:
+            //builder.Services.AddScoped<ISettingsHelper, SettingsHelper>();
+            builder.Services.AddScoped<ISettingsService, SettingsService>();
+            builder.Services.AddScoped<IDirectorySearchService, DirectorySearchService>();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-
             app.UseHttpsRedirection();
 
+            app.UseDefaultFiles();
             app.UseStaticFiles();
 
             app.MapControllers();
