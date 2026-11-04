@@ -29,7 +29,7 @@ namespace TestProject.src.Application.Services
                 .ToList();
 
             var rel = _settingsHelpers.ToRelative(full);
-            return new DirectoryListing(rel, ParentOf(rel), entries);
+            return new DirectoryListing(rel, ParentOf(rel), entries, _settingsHelpers.CurrentRoot);
         }
 
         public SearchResult Search(string query, string? relativePath, int maxResults)

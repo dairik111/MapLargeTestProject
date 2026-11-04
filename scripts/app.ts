@@ -9,6 +9,7 @@
 interface DirectoryListing {
     path: string;
     parent: string | null;
+    homePath: string;
     entries: FileEntry[];
 }
 
@@ -19,6 +20,9 @@ interface SearchResult {
 }
 
 let currentPath: string = "";
+
+// Incremented by every request that updates the view; a response is ignored if a newer request has started.
+let requestSeq: number = 0;
 
 function $<T extends HTMLElement = HTMLElement>(id: string): T {
     const el = document.getElementById(id);
@@ -31,6 +35,7 @@ function setStatus(msg: string, isError: boolean = false): void {
     $("status").className = isError ? "error" : "";
 }
 
+// Post/Put/Patch items to server with a body
 async function send<T>(url: string, content: string): Promise<T> {
     const response = await fetch(url, {
         method: 'POST', // or 'PUT', 'PATCH'
@@ -40,15 +45,18 @@ async function send<T>(url: string, content: string): Promise<T> {
         body: JSON.stringify(content) // Convert the JS object to a JSON string
     });
 
+    if (!response.ok) throw new Error((await response.text()) || response.statusText);
     return response.json() as Promise<T>;
 }
 
+// Get items from the server
 async function api<T>(url: string): Promise<T> {
     const res = await fetch(url);
     if (!res.ok) throw new Error((await res.text()) || res.statusText);
     return res.json() as Promise<T>;
 }
 
+// Format the output
 function fmtSize(n: number | null): string {
     if (n == null) return "";
     const units = ["B", "KB", "MB", "GB", "TB"];
@@ -110,38 +118,81 @@ function errorMessage(err: unknown): string {
     return err instanceof Error ? err.message : String(err);
 }
 
-async function load(path: string): Promise<void> {
+function showHomePath(homePath: string): void {
+    $<HTMLSpanElement>("currentHome").textContent = homePath;
+}
+
+function urlFor(path: string): string {
+    return path ? "?path=" + encodeURIComponent(path) : location.pathname;
+}
+
+// Pushes history only after a successful fetch, using the server's normalized data.path.
+async function load(path: string, push: boolean = true): Promise<void> {
+    const seq = ++requestSeq;
     try {
         setStatus("Loading…");
         const data = await api<DirectoryListing>("/api/search?path=" + encodeURIComponent(path));
+        if (seq !== requestSeq) return;
+
+        const previous = currentPath;
         currentPath = data.path;
+        showHomePath(data.homePath);
+
         renderCrumbs(currentPath);
         renderRows(data.entries, false, data.parent);
         setStatus(data.entries.length + " item(s)");
+
+        if (push && data.path !== previous)
+            history.pushState({ path: currentPath }, "", urlFor(currentPath));
+
     } catch (err) {
+        if (seq !== requestSeq) return;
+        // The URL already points at this path (initial load or Back/Forward), so make the page match it:
+        // show the requested location in the breadcrumbs, empty the table, and report the error.
+        if (!push) {
+            currentPath = path;
+            renderCrumbs(path);
+            renderRows([], false, null);
+        }
         setStatus(errorMessage(err), true);
     }
 }
 
 async function search(query: string): Promise<void> {
+    const seq = ++requestSeq;
     try {
         setStatus("Searching…");
         const data = await api<SearchResult>("/api/search/search?query=" + encodeURIComponent(query) + "&path=" + encodeURIComponent(currentPath));
+        if (seq !== requestSeq) return;
         renderRows(data.entries, true, null);
         setStatus(data.entries.length + " result(s)" + (data.truncated ? " (truncated)" : "") + ` for "${query}"`);
     } catch (err) {
+        if (seq !== requestSeq) return;
         setStatus(errorMessage(err), true);
     }
 }
 
 async function setNewHome(path: string): Promise<void> {
+    const seq = ++requestSeq;
     try {
         setStatus("Setting new Home...");
-        const data = await send<SearchResult>("/api/filemanager/sethome", path);
-        renderRows(data.entries, true, null);
-        setStatus(data.entries.length + " result(s)" + (data.truncated ? " (truncated)" : "") + ` for "${path}"`);
+        // The server redirects to the directory listing of the new home, which fetch follows.
+        const data = await send<DirectoryListing>("/api/filemanager/sethome", path);
+        if (seq !== requestSeq) return;
+        currentPath = data.path;
+
+        $<HTMLInputElement>("query").value = "";
+        $<HTMLInputElement>("rootPath").value = ""; //Clear out the path after is has been set
+        showHomePath(data.homePath);
+
+        renderCrumbs(currentPath);
+        renderRows(data.entries, false, data.parent);
+        history.replaceState({ path: currentPath }, "", urlFor(currentPath));
+        setStatus(data.entries.length + " item(s) in new home");
+        
     }
     catch (err) {
+        if (seq !== requestSeq) return;
         setStatus(errorMessage(err), true);
     }
 }
@@ -165,4 +216,9 @@ $<HTMLFormElement>("settingsForm").onsubmit = (e: SubmitEvent): void => {
         load(currentPath);
 };
 
-load("");
+window.onpopstate = (): void => {
+    load(new URLSearchParams(location.search).get("path") ?? "", false);
+};
+
+// Initial load should not push to history, otherwise you get duplicate entries
+load(new URLSearchParams(location.search).get("path") ?? "", false);

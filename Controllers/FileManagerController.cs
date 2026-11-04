@@ -36,7 +36,7 @@ namespace TestProject.Controllers
             catch (ArgumentException) { return BadRequest("Path is required."); }
             catch (DirectoryNotFoundException) { return NotFound("Directory not found."); }
 
-            return RedirectToAction(nameof(SearchController.DirectoryContentList), "Search", new { path = newPath });
+            return RedirectToAction(nameof(SearchController.DirectoryContentList), "Search");
         }
         
     }
