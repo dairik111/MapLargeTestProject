@@ -13,9 +13,10 @@ namespace TestProject {
 
             // Configure services
             builder.Services.AddSingleton<ISettingsHelper, SettingsHelper>(); // Set as Singleton so that it holds the mutable root:
-            //builder.Services.AddScoped<ISettingsHelper, SettingsHelper>();
+            
             builder.Services.AddScoped<ISettingsService, SettingsService>();
             builder.Services.AddScoped<IDirectorySearchService, DirectorySearchService>();
+            builder.Services.AddScoped<IFileUploadDownload,  FileUploadDownloadService>();
 
             var app = builder.Build();
 

@@ -36,14 +36,37 @@
                     <tbody id="rows"></tbody>
                 </table>
             </section>
-            <aside class="settings">
-                <h1>Settings</h1>
-                <form id="settingsForm">
-                    <input type="text" id="rootPath" placeholder="Set new home..." aria-label="Home Path" />
-                    <button type="submit">Set Path</button>
-                </form>
-            </aside>
+            <div class="sidebar">
+                <aside class="settings">
+                    <h1>Settings</h1>
+                    <form id="settingsForm">
+                        <input type="text" id="rootPath" placeholder="Set new home..." aria-label="Home Path" />
+                        <button type="submit">Set Path</button>
+                    </form>
+                </aside>
+
+                <aside class="settings">
+                    <h1>File Actions</h1>
+                    <button type="button" id="uploadBtn"><span class="plus" aria-hidden="true">+</span> Upload</button>
+                    <div id="uploadstatus" role="status"></div>
+                </aside>
+            </div>
         </div>
+
+        <dialog id="uploadDialog" aria-labelledby="uploadTitle">
+            <form id="uploadForm">
+                <h2 id="uploadTitle">Upload Files</h2>
+                <input type="file" id="uploadFiles" name="files" multiple aria-label="Files to upload" />
+                <ul id="uploadList"></ul>
+                <div id="uploadMessage" role="alert"></div>
+                
+                <div class="dialogButtons">
+                    <button type="button" id="uploadCancel">Cancel</button>
+                    <button type="submit" id="uploadSubmit" disabled>Upload</button>
+                </div>
+            </form>
+        </dialog>
+        
     </main>
     <script src="js/app.js"></script>  
 </body>
