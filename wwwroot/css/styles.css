@@ -172,21 +172,35 @@
         cursor: pointer;
     }
 
-    #status {
+    /* Status lines: neutral (in progress) by default, green on success, red on error/failure */
+    #status, #uploadstatus, #downloadstatus {
         margin: .5rem 0;
         color: #666;
     }
 
-    #status.error {
+    #status.success, #uploadstatus.success, #downloadstatus.success, #uploadMessage.success {
+        color: #1a7f37;
+    }
+
+    #status.error, #uploadstatus.error, #downloadstatus.error, #uploadMessage.error {
         color: #b00020;
     }
 
-    #uploadstatus {
-        margin: .5rem 0;
-        color: green;
+    .fileName {
+        cursor: pointer;
+        user-select: none;
     }
 
-    #uploadstatus.error {
-        color: #b00020;
+    .fileName:focus-visible {
+        outline: 2px solid #0b5cad;
+        outline-offset: 2px;
+    }
+
+    tr.selected td {
+        background: #dbe9f9;
+    }
+
+    tr.selected .fileName {
+        font-weight: 600;
     }
 
