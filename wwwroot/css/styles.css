@@ -172,6 +172,27 @@
         cursor: pointer;
     }
 
+    /* Download and Clear selection share one non-wrapping row. When the Download label grows
+       ("Download 12 files (.zip)"), that button shrinks and wraps its text instead of pushing
+       Clear selection onto the next line. */
+    .actionRow {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        gap: .5rem;
+        margin-top: .5rem;
+    }
+
+    .actionRow #downloadBtn {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .actionRow #clearSelection {
+        flex: 0 0 auto;
+        white-space: nowrap;
+    }
+
     /* Status lines: neutral (in progress) by default, green on success, red on error/failure */
     #status, #uploadstatus, #downloadstatus {
         margin: .5rem 0;
