@@ -15,6 +15,8 @@
 
   <ItemGroup>
     <Content Include="scripts\app.ts" />
+    <Content Include="scripts\upload.ts" />
+    <Content Include="scripts\download.ts" />
   </ItemGroup>
 
   <ItemGroup>
