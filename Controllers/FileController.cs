@@ -77,5 +77,32 @@ namespace TestProject.Controllers
                 return StatusCode(StatusCodes.Status403Forbidden, "A path is outside the home directory.");
             }
         }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteFiles([FromQuery] List<string> files)
+        {
+            try
+            {
+                var fileCount = files.Count();
+
+                await _fileService.Delete(files);
+
+                return Ok(fileCount);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (FileNotFoundException fnf)
+            {
+                _logger.LogError(fnf, "One or more files were not deleted");
+                return NotFound(fnf.Message);
+            }
+            catch (UnauthorizedAccessException ex) // A path is outside the home directory
+            {
+                _logger.LogError(ex, "One or more files were not deleted");
+                return StatusCode(StatusCodes.Status403Forbidden, "A path is outside the home directory.");
+            }
+        }
     }
 }

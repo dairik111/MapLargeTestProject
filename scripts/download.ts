@@ -31,6 +31,7 @@ function updateDownloadUi(): void {
     const btn = $<HTMLButtonElement>("downloadBtn");
     btn.disabled = n === 0;
     btn.textContent = n > 1 ? `Download ${n} files (.zip)` : "Download";
+    $<HTMLButtonElement>("deleteBtn").disabled = n === 0;
     $<HTMLButtonElement>("clearSelection").disabled = n === 0;
 }
 
@@ -45,9 +46,10 @@ function clearSelection(): void {
 
 // ---- File download ----
 
-// autoClear is false for the in-progress message so it isn't cleared while a long download is still running.
-function setDownloadStatus(msg: string, isError: boolean = false, autoClear: boolean = true): void {
-    setTimedStatus("downloadstatus", msg, isError, autoClear);
+// Shared status line for the Download and Delete buttons.
+// autoClear is false for in-progress messages so they aren't cleared while a long operation is still running.
+function setDownloadOrDeleteStatus(msg: string, isError: boolean = false, autoClear: boolean = true): void {
+    setTimedStatus("downloadOrDeleteStatus", msg, isError, autoClear);
 }
 
 // Uses the server's Content-Disposition filename (filename*= is RFC 5987 encoded), falling back to the given name.
@@ -86,19 +88,19 @@ async function downloadSelected(): Promise<void> {
         fallback = "Downloads.zip";
     }
 
-    const btn = $<HTMLButtonElement>("downloadBtn");
-    btn.disabled = true;
+    $<HTMLButtonElement>("downloadBtn").disabled = true;
+    $<HTMLButtonElement>("deleteBtn").disabled = true;
     try {
-        setDownloadStatus("Downloading…", false, false);
+        setDownloadOrDeleteStatus("Downloading…", false, false);
         const res = await fetch(url);
         if (!res.ok) throw new Error((await res.text()) || res.statusText);
         saveBlob(await res.blob(), filenameFrom(res, fallback));
-        setDownloadStatus(paths.length === 1 ? "Downloaded 1 file" : `Downloaded ${paths.length} files`);
+        setDownloadOrDeleteStatus(paths.length === 1 ? "Downloaded 1 file" : `Downloaded ${paths.length} files`);
         clearSelection();   // Only after success; on failure the selection stays so the user can retry
     } catch (err) {
-        setDownloadStatus(errorMessage(err), true);
+        setDownloadOrDeleteStatus(errorMessage(err), true);
     } finally {
-        btn.disabled = selected.size === 0;
+        updateDownloadUi();   // Re-enables Download and Delete if anything is still selected
     }
 }
 
@@ -106,3 +108,43 @@ $("downloadBtn").onclick = (): void => { void downloadSelected(); };
 $("clearSelection").onclick = clearSelection;
 
 // ---- END of File download ----
+
+// ---- File delete ----
+
+// Sends the selected paths to DELETE /api/file?files=...&files=... and reports the count the server returns.
+async function deleteSelected(): Promise<void> {
+    const paths = Array.from(selected);
+    if (paths.length === 0) return;
+
+    // Deleting can't be undone, so confirm first.
+    const what = paths.length === 1 ? `"${paths[0].slice(paths[0].lastIndexOf("/") + 1)}"` : `${paths.length} files`;
+    if (!confirm(`Delete ${what}? This cannot be undone.`)) return;
+
+    const qs = new URLSearchParams();
+    for (const p of paths) qs.append("files", p);
+
+    $<HTMLButtonElement>("downloadBtn").disabled = true;
+    $<HTMLButtonElement>("deleteBtn").disabled = true;
+    try {
+        setDownloadOrDeleteStatus("Deleting…", false, false);
+        const res = await fetch("/api/file?" + qs.toString(), { method: "DELETE" });
+        if (!res.ok) throw new Error((await res.text()) || res.statusText);
+
+        const deleted = await res.json() as number;   // The controller returns the number of files deleted
+        setDownloadOrDeleteStatus(`Deleted ${deleted} file${deleted === 1 ? "" : "s"}`);
+
+        // Clear the stale selection now, then refresh the table so the deleted files disappear.
+        // Keep the user in search results if they were searching.
+        clearSelection();
+        const query = $<HTMLInputElement>("query").value.trim();
+        void (query ? search(query) : load(currentPath));
+    } catch (err) {
+        setDownloadOrDeleteStatus(errorMessage(err), true);
+    } finally {
+        updateDownloadUi();
+    }
+}
+
+$("deleteBtn").onclick = (): void => { void deleteSelected(); };
+
+// ---- END of File delete ----
