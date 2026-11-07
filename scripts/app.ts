@@ -13,12 +13,6 @@ interface DirectoryListing {
     entries: FileEntry[];
 }
 
-interface SearchResult {
-    query: string;
-    truncated: boolean;
-    entries: FileEntry[];
-}
-
 let currentPath: string = "";
 
 // Incremented by every request that updates the view; a response is ignored if a newer request has started.
@@ -129,6 +123,8 @@ function renderRows(entries: FileEntry[], showLocation: boolean, parent: string 
     body.replaceChildren();
     selected.clear();
     updateDownloadUi();
+    // Persistent count of the rows in the table (the ".." row isn't counted), separate from the timed #status line.
+    $("itemCount").textContent = `${entries.length} item(s)`;
     if (parent != null) {
         const tr = body.insertRow();
         tr.insertCell().append(makeLink("📁 ..", () => load(parent)));
@@ -174,7 +170,7 @@ async function load(path: string, push: boolean = true): Promise<void> {
 
         renderCrumbs(currentPath);
         renderRows(data.entries, false, data.parent);
-        setStatus(data.entries.length + " item(s)");
+        setStatus(""); // Remove loading message
 
         if (push && data.path !== previous)
             history.pushState({ path: currentPath }, "", urlFor(currentPath));
@@ -188,20 +184,6 @@ async function load(path: string, push: boolean = true): Promise<void> {
             renderCrumbs(path);
             renderRows([], false, null);
         }
-        setStatus(errorMessage(err), true);
-    }
-}
-
-async function search(query: string): Promise<void> {
-    const seq = ++requestSeq;
-    try {
-        setStatus("Searching…", false, false);
-        const data = await api<SearchResult>("/api/search/search?query=" + encodeURIComponent(query) + "&path=" + encodeURIComponent(currentPath));
-        if (seq !== requestSeq) return;
-        renderRows(data.entries, true, null);
-        setStatus(data.entries.length + " result(s)" + (data.truncated ? " (truncated)" : "") + ` for "${query}"`);
-    } catch (err) {
-        if (seq !== requestSeq) return;
         setStatus(errorMessage(err), true);
     }
 }
@@ -222,24 +204,13 @@ async function setNewHome(path: string): Promise<void> {
         renderCrumbs(currentPath);
         renderRows(data.entries, false, data.parent);
         history.replaceState({ path: currentPath }, "", urlFor(currentPath));
-        setStatus(data.entries.length + " item(s) in new home");
-        
+        setStatus("");
     }
     catch (err) {
         if (seq !== requestSeq) return;
         setStatus(errorMessage(err), true);
     }
 }
-
-$<HTMLFormElement>("searchForm").onsubmit = (e: SubmitEvent): void => {
-    e.preventDefault();
-    const query = $<HTMLInputElement>("query").value.trim();
-    if (query)
-        search(query);
-    else
-        load(currentPath);
-};
-$("clear").onclick = (): void => { $<HTMLInputElement>("query").value = ""; load(currentPath); };
 
 $<HTMLFormElement>("settingsForm").onsubmit = (e: SubmitEvent): void => {
     e.preventDefault();

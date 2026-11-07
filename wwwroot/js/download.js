@@ -43,6 +43,7 @@ function updateDownloadUi() {
     const btn = $("downloadBtn");
     btn.disabled = n === 0;
     btn.textContent = n > 1 ? `Download ${n} files (.zip)` : "Download";
+    $("deleteBtn").disabled = n === 0;
     $("clearSelection").disabled = n === 0;
 }
 function clearSelection() {
@@ -55,9 +56,10 @@ function clearSelection() {
     updateDownloadUi();
 }
 // ---- File download ----
-// autoClear is false for the in-progress message so it isn't cleared while a long download is still running.
-function setDownloadStatus(msg, isError = false, autoClear = true) {
-    setTimedStatus("downloadstatus", msg, isError, autoClear);
+// Shared status line for the Download and Delete buttons.
+// autoClear is false for in-progress messages so they aren't cleared while a long operation is still running.
+function setDownloadOrDeleteStatus(msg, isError = false, autoClear = true) {
+    setTimedStatus("downloadOrDeleteStatus", msg, isError, autoClear);
 }
 // Uses the server's Content-Disposition filename (filename*= is RFC 5987 encoded), falling back to the given name.
 function filenameFrom(res, fallback) {
@@ -101,22 +103,22 @@ function downloadSelected() {
             url = "/api/file/download-multi?" + qs.toString();
             fallback = "Downloads.zip";
         }
-        const btn = $("downloadBtn");
-        btn.disabled = true;
+        $("downloadBtn").disabled = true;
+        $("deleteBtn").disabled = true;
         try {
-            setDownloadStatus("Downloading…", false, false);
+            setDownloadOrDeleteStatus("Downloading…", false, false);
             const res = yield fetch(url);
             if (!res.ok)
                 throw new Error((yield res.text()) || res.statusText);
             saveBlob(yield res.blob(), filenameFrom(res, fallback));
-            setDownloadStatus(paths.length === 1 ? "Downloaded 1 file" : `Downloaded ${paths.length} files`);
+            setDownloadOrDeleteStatus(paths.length === 1 ? "Downloaded 1 file" : `Downloaded ${paths.length} files`);
             clearSelection(); // Only after success; on failure the selection stays so the user can retry
         }
         catch (err) {
-            setDownloadStatus(errorMessage(err), true);
+            setDownloadOrDeleteStatus(errorMessage(err), true);
         }
         finally {
-            btn.disabled = selected.size === 0;
+            updateDownloadUi(); // Re-enables Download and Delete if anything is still selected
         }
     });
 }

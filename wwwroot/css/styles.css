@@ -38,6 +38,7 @@
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
+        flex-grow: .2;
     }
 
     .settings h1 {
@@ -60,10 +61,18 @@
         }
     }
 
-    input[type=search], input[type=text] {
+    input[type=search] {
         flex: 1;
         padding: .5rem;
         font-size: 1rem;
+        max-width: 30%;
+    }
+
+    input[type=text] {
+        flex: 1;
+        padding: .5rem;
+        font-size: 1rem;
+        max-width: 60%;
     }
 
     button {
@@ -71,7 +80,7 @@
         font-size: 1rem;
         cursor: pointer;
     }
-
+    
     #currentHome {
         margin-left: .5rem;
         color: #666;
@@ -124,16 +133,46 @@
         gap: .5rem;
     }
 
+    /* The bar mirrors .layout: .crumbLeft takes the table's column and the ::after spacer takes the
+       sidebar's column (same basis, grow and gap), so the item count lines up with the table's right edge. */
     .crumbBar {
         display: flex;
-        justify-content: space-between;
         align-items: baseline;
-        gap: 1rem;
+        gap: 1.5rem;
         margin-bottom: .75rem;
     }
 
+    .crumbBar::after {
+        content: "";
+        flex: 0 0 280px;
+        flex-grow: .2;
+    }
+
+    .crumbLeft {
+        flex: .8;
+        min-width: 0;
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: .25rem 1rem;
+    }
+
+    #itemCount {
+        margin-left: auto;   /* stays on the right even when it wraps below the breadcrumbs */
+        color: #666;
+        font-size: .9rem;
+        white-space: nowrap;
+    }
+
+    @media (max-width: 800px) {
+        .crumbBar::after {
+            display: none;   /* the sidebar stacks under the table, so the table is full width */
+        }
+    }
+
     .homeInfo {
-        text-align: right;
+        text-align: left;
+        margin: 0 0 .5rem 0;
     }
 
     .homeInfo label {
@@ -151,7 +190,7 @@
     }
 
     table {
-        width: 100%;
+        width: 95%;
         border-collapse: collapse;
         background: #fff;
     }
@@ -176,14 +215,13 @@
        ("Download 12 files (.zip)"), that button shrinks and wraps its text instead of pushing
        Clear selection onto the next line. */
     .actionRow {
-        display: flex;
         flex-wrap: nowrap;
         align-items: stretch;
         gap: .5rem;
         margin-top: .5rem;
     }
 
-    .actionRow #downloadBtn {
+    .actionRow #downloadBtn, .actionRow #deleteBtn {
         flex: 1 1 auto;
         min-width: 0;
     }
@@ -194,16 +232,16 @@
     }
 
     /* Status lines: neutral (in progress) by default, green on success, red on error/failure */
-    #status, #uploadstatus, #downloadstatus {
+    #status, #uploadstatus, #downloadOrDeleteStatus {
         margin: .5rem 0;
         color: #666;
     }
 
-    #status.success, #uploadstatus.success, #downloadstatus.success, #uploadMessage.success {
-        color: #1a7f37;
-    }
+        #status.success, #uploadstatus.success, #downloadOrDeleteStatus.success, #uploadMessage.success, #itemCount {
+            color: #1a7f37;
+        }
 
-    #status.error, #uploadstatus.error, #downloadstatus.error, #uploadMessage.error {
+    #status.error, #uploadstatus.error, #downloadOrDeleteStatus.error, #uploadMessage.error {
         color: #b00020;
     }
 

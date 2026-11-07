@@ -13,12 +13,12 @@
             <input type="search" id="query" placeholder="Search names in current folder and below…" aria-label="Search" />
             <button type="submit">Search</button>
             <button type="button" id="clear">Clear</button>
+
         </form>
         <div class="crumbBar">
-            <div id="crumbs"></div>
-            <div class="homeInfo">
-                <label>Home Directory</label>
-                <span id="currentHome"></span>
+            <div class="crumbLeft">
+                <div id="crumbs"></div>
+                <span id="itemCount" role="status" aria-live="polite"></span>
             </div>
         </div>
         <div id="status" role="status"></div>
@@ -39,10 +39,15 @@
             <div class="sidebar">
                 <aside class="settings">
                     <h1>Settings</h1>
+                    <div class="homeInfo">
+                        <label>Home Directory:</label>
+                        <span id="currentHome"></span>
+                    </div>
                     <form id="settingsForm">
                         <input type="text" id="rootPath" placeholder="Set new home..." aria-label="Home Path" />
                         <button type="submit">Set Path</button>
                     </form>
+
                 </aside>
 
                 <aside class="settings">
@@ -51,9 +56,10 @@
                     <div id="uploadstatus" role="status"></div>
                     <div class="actionRow">
                         <button type="button" id="downloadBtn" disabled>Download</button>
+                        <button type="button" id="deleteBtn" disabled>Delete</button>
                         <button type="button" id="clearSelection" disabled>Clear selection</button>
                     </div>
-                    <div id="downloadstatus" role="status"></div>
+                    <div id="downloadOrDeleteStatus" role="status"></div>
                 </aside>
             </div>
         </div>
@@ -64,18 +70,20 @@
                 <input type="file" id="uploadFiles" name="files" multiple aria-label="Files to upload" />
                 <ul id="uploadList"></ul>
                 <div id="uploadMessage" role="alert"></div>
-                
+
                 <div class="dialogButtons">
                     <button type="button" id="uploadCancel">Cancel</button>
                     <button type="submit" id="uploadSubmit" disabled>Upload</button>
                 </div>
             </form>
         </dialog>
-        
+
     </main>
     <!-- Order matters: app.js defines the shared helpers the other two scripts use at load time -->
     <script src="js/app.js"></script>
+    <script src="js/search.js"></script>
     <script src="js/upload.js"></script>
     <script src="js/download.js"></script>
+    <script src="js/delete.js"></script>
 </body>
 </html>
