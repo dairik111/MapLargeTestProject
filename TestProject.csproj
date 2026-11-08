@@ -8,9 +8,17 @@
 
   <ItemGroup>
     <Compile Remove="Models\**" />
+    <Compile Remove="src\Domain\**" />
+    <Compile Remove="wwwroot\js\**" />
     <Content Remove="Models\**" />
+    <Content Remove="src\Domain\**" />
+    <Content Remove="wwwroot\js\**" />
     <EmbeddedResource Remove="Models\**" />
+    <EmbeddedResource Remove="src\Domain\**" />
+    <EmbeddedResource Remove="wwwroot\js\**" />
     <None Remove="Models\**" />
+    <None Remove="src\Domain\**" />
+    <None Remove="wwwroot\js\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,10 +30,6 @@
 
   <ItemGroup>
     <None Include="wwwroot\index.html" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="src\Domain\" />
   </ItemGroup>
 
   <!--<ItemGroup>
